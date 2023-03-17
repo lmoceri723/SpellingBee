@@ -37,20 +37,89 @@ public class SpellingBee {
 
     public SpellingBee(String letters) {
         this.letters = letters;
-        words = new ArrayList<String>();
+        words = new ArrayList<>();
     }
 
-    // TODO: generate all possible substrings and permutations of the letters.
-    //  Store them all in the ArrayList words. Do this by calling ANOTHER method
-    //  that will find the substrings recursively.
+    // Calls the overloaded generate with the additional parameters
     public void generate() {
-        // YOUR CODE HERE — Call your recursive method!
+        generate("", letters);
     }
 
-    // TODO: Apply mergesort to sort all words. Do this by calling ANOTHER method
-    //  that will find the substrings recursively.
-    public void sort() {
-        // YOUR CODE HERE
+    // Generates every permutation of a string
+    public void generate(String word, String letters) {
+        // Adds the word the last call created
+        words.add(word);
+
+        // Base case for if there are no letters left to create words
+        if (letters.equals(""))
+        {
+            return;
+        }
+
+        // Iterates through each usable letter
+        for (int i = 0; i < letters.length(); i++)
+        {
+            // Appends the letter at the end of the word
+            String newWord = word + letters.charAt(i);
+            // Removes the letter from the available letters
+            String newLetters = letters.substring(0, i) + letters.substring(i + 1);
+            // Calls the function again with the new parameters
+            generate(newWord, newLetters);
+        }
+    }
+
+    // runs merge sort on words and sets words equal to the new sorted ArrayList
+    public void sort()
+    {
+        words = mergeSort(words, 0, words.size() - 1);
+    }
+
+    // Uses merge sort to sort the ArrayList
+    public ArrayList<String> mergeSort(ArrayList<String> arr, int low, int high)
+    {
+        // If there is only 1 index between high and low
+        if (high - low == 0)
+        {
+            // returns a new array with only that index
+            ArrayList<String> newArr = new ArrayList<>();
+            newArr.add(arr.get(low));
+            return newArr;
+        }
+        // Gets the middle point of the array
+        int med = (high + low) / 2;
+        // Runs merge sort on both halves
+        ArrayList<String> arr1 = mergeSort(arr, low, med);
+        ArrayList<String> arr2 = mergeSort(arr, med + 1, high);
+        // Merges both halves, sorting them
+        return merge(arr1, arr2);
+    }
+
+    public ArrayList<String> merge(ArrayList<String> arr1, ArrayList<String> arr2) {
+        ArrayList<String> merged = new ArrayList<>();
+        // Iterates through each element in both ArrayLists
+        int i = 0, j = 0;
+        while(j < arr1.size() && i < arr2.size()) {
+            // Adds whichever String is "lower" alphabetically first
+            if (arr1.get(j).compareTo(arr2.get(i)) < 0) {
+                merged.add(arr1.get(j));
+                j++;
+            }
+            else {
+                merged.add(arr2.get(i));
+                i++;
+            }
+        }
+        // Once one ArrayList is empty, adds the remaining elements from both (only 1 will actually have elements)
+        while(i < arr2.size()) {
+            merged.add(arr2.get(i));
+            i++;
+        }
+        while(j < arr1.size()) {
+            merged.add(arr1.get(j));
+            j++;
+        }
+
+        return merged;
     }
 
     // Removes duplicates from the sorted list.
@@ -65,11 +134,46 @@ public class SpellingBee {
         }
     }
 
-    // TODO: For each word in words, use binary search to see if it is in the dictionary.
-    //  If it is not in the dictionary, remove it from words.
-    public void checkWords() {
-        // YOUR CODE HERE
+    public void checkWords()
+    {
+        // Iterates through each word in words
+        for (int i = 0; i < words.size(); i++) {
+            // Checks if each word is absent from dictionary
+            if (!search(words.get(i), 0, DICTIONARY_SIZE - 1))
+            {
+                // If so, removes it
+                words.remove(i);
+                // Decreases i, as the new element at index i will need to be checked also.
+                i--;
+            }
+        }
     }
+
+    // Uses binary search to search for a target string in DICTIONARY
+    public boolean search(String target, int low, int high) {
+        // Returns false if the
+        if (low > high) {
+            return false;
+        }
+        // Gets the index of the middle element
+        int med = (high + low) / 2;
+        // Checks if the target is at the middle, if so returns true
+        if (DICTIONARY[med].equals(target)) {
+            return true;
+        }
+        // If the string is "higher" alphabetically than the middle
+        // Runs the method again with only the second half of DICTIONARY
+        if (DICTIONARY[med].compareTo(target) < 0) {
+            low = med + 1;
+        }
+        // Otherwise, runs it again with the first half
+        else {
+            high = med - 1;
+        }
+        // Runs again with the new parameters
+        return search(target, low, high);
+    }
+
 
     // Prints all valid words to wordList.txt
     public void printWords() throws IOException {
